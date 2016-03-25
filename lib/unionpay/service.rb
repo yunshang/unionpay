@@ -130,19 +130,19 @@ module UnionPay
       self.args[key]
     end
 
-    def self.get_cert_id
+    def get_cert_id
       get_certificate.certificate.serial.to_i
     end
 
-    def self.get_cret_key
+    def get_cret_key
       get_certificate.key
     end
 
-    def self.get_certificate
+    def get_certificate
         OpenSSL::PKCS12.new(File.read(UnionPay.unionpay_certificate), UnionPay.unionpay_certificate_psw)
     end
 
-    def self.get_validate_certificate
+    def get_validate_certificate
         OpenSSL::X509::Certificate.new(File.read(UnionPay.unionpay_validate_certificate))
     end
 
