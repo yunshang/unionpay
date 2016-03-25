@@ -14,10 +14,11 @@ module UnionPay
 
     def self.front_pay(param)
       new.instance_eval do
-        param['orderTime']         ||= Time.now.strftime('%Y%m%d%H%M%S')         #交易时间, YYYYmmhhddHHMMSS
-        param['orderCurrency']     ||= UnionPay::CURRENCY_CNY                    #交易币种，CURRENCY_CNY=>人民币
-        param['transType']         ||= UnionPay::CONSUME
-        trans_type = param['transType']
+        param['txnTime']         ||= Time.now.strftime('%Y%m%d%H%M%S')         #交易时间, YYYYmmhhddHHMMSS
+        param['currencyCode']     ||= UnionPay::CURRENCY_CNY                    #交易币种，CURRENCY_CNY=>人民币
+        param['txnType']         ||= UnionPay::CONSUME
+        param['certId'] = get_cert_id
+        trans_type = param['txnType']
         if [UnionPay::CONSUME, UnionPay::PRE_AUTH].include? trans_type
           @api_url = UnionPay.front_pay_url
           self.args = PayParamsEmpty.merge(PayParams).merge(param)
@@ -127,6 +128,22 @@ module UnionPay
 
     def [](key)
       self.args[key]
+    end
+
+    def self.get_cert_id
+      get_certificate.certificate.serial.to_i
+    end
+
+    def self.get_cret_key
+      get_certificate.key
+    end
+
+    def self.get_certificate
+        OpenSSL::PKCS12.new(File.read(UnionPay.unionpay_certificate), UnionPay.unionpay_certificate_psw)
+    end
+
+    def self.get_validate_certificate
+        OpenSSL::X509::Certificate.new(File.read(UnionPay.unionpay_validate_certificate))
     end
 
     private

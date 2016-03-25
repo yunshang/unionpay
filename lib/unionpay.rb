@@ -5,7 +5,9 @@ require File.dirname(__FILE__) + '/unionpay/utils'
 
 module UnionPay
   class << self
-    attr_accessor :mer_id, :security_key, :mer_abbr, :environment
+    attr_accessor :mer_id, :security_key, :mer_abbr, :environment, 
+                  :unionpay_certificate,:unionpay_certificate_psw,
+                  :unionpay_validate_certificate
 
     def mer_id= v
       UnionPay::PayParams['merId'] = v
