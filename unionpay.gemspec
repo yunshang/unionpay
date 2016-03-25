@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["kikyous@163.com"]
   spec.description   = %q{An unofficial unionpay gem}
   spec.summary       = %q{An unofficial unionpay gem}
-  spec.homepage      = "https://github.com/kikyous/unionpay"
+  spec.homepage      = "https://github.com/yunshang/unionpay"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)
