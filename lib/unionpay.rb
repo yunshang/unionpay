@@ -5,7 +5,7 @@ require File.dirname(__FILE__) + '/unionpay/utils'
 
 module UnionPay
   class << self
-    attr_accessor :mer_id, :security_key, :mer_abbr, :environment, 
+    attr_accessor :merId, :security_key, :merAbbr, :environment, 
                   :unionpay_certificate,:unionpay_certificate_psw,
                   :unionpay_validate_certificate
 
@@ -21,8 +21,8 @@ module UnionPay
       case e
       ## 测试环境
       when :development
-        self.front_pay_url = "http://58.246.226.99/UpopWeb/api/Pay.action"
-        self.back_pay_url = "http://58.246.226.99/UpopWeb/api/BSPay.action"
+        self.front_pay_url = "http://101.231.204.80:5000/gateway/api/frontTransReq.do"
+        self.back_pay_url = "http://101.231.204.80:5000/gateway/api/backTransReq.do"
         self.query_url = "http://58.246.226.99/UpopWeb/api/Query.action"
       ## 预上线环境
       when :pre_production

@@ -10,13 +10,14 @@ module UnionPay
 
   # 支付请求预定义字段
   PayParams = {
-    'version' => '5.0.0',
+    'version' => '1.0.0',
     'encoding' => 'UTF-8', 
     'txnType' => '01',
     'txnSubType' => '01',
     'bizType'  => '000201',
     'channelType'  => '07',
-    'signMethod'  => '01'
+    'signMethod'  => '01',
+    "merId" => '777290058127822'
   }
 
   FRONT_PAY = 1
@@ -50,7 +51,8 @@ module UnionPay
     "defaultPayType" => "",
     "defaultBankNumber" => "",
     "transTimeout" => "",
-    "merReserved" => ""
+    "merReserved" => "",
+    "signature" => ""
   }
 
   # 支付请求必填字段检查
@@ -58,17 +60,12 @@ module UnionPay
     "version",
     "encoding",
     "certId",
-    "signMethod",
-    "signature",
     "txnType",
     "txnSubType",
     "bizType",
     "channelType",
-    "orderId",
     "currencyCode",
-    "txnTime",
-    "payTimeout",
-    "issInsCode"
+    "txnTime"
   ]
 
   # 查询请求必填字段检查
@@ -76,18 +73,15 @@ module UnionPay
     "version",
     "charset",
     "transType",
-    "merId",
     "orderNumber",
     "orderTime",
-    "merReserved",
+    "frontUrl",
+    "backUrl"
   ]
 
   # 商户保留域可能包含的字段
   MerParamsReserved = [
     "accessType",
-    "merId",
-    "frontUrl",
-    "backUrl",
     "frontFailUrl"
   ]
 
@@ -98,7 +92,6 @@ module UnionPay
     "respCode",
     "respMsg",
     "respTime",
-    "merId",
     "merAbbr",
     "orderNumber",
     "traceNumber",
@@ -113,10 +106,10 @@ module UnionPay
     "exchangeDate",
     "cupReserved",
     "signMethod",
-    "signature",
+    "signature"
   ]
 
   SignIgnoreParams = [
-    "bank",
+    "bank"
   ]
 end

@@ -6,8 +6,8 @@ require 'unionpay/version'
 Gem::Specification.new do |spec|
   spec.name          = "unionpay"
   spec.version       = UnionPay::VERSION
-  spec.authors       = ["Chen"]
-  spec.email         = ["kikyous@163.com"]
+  spec.authors       = ["alshin"]
+  spec.email         = ["alshin@126.com"]
   spec.description   = %q{An unofficial unionpay gem}
   spec.summary       = %q{An unofficial unionpay gem}
   spec.homepage      = "https://github.com/yunshang/unionpay"

@@ -18,6 +18,7 @@ module UnionPay
         param['currencyCode']     ||= UnionPay::CURRENCY_CNY                    #交易币种，CURRENCY_CNY=>人民币
         param['txnType']         ||= UnionPay::CONSUME
         param['certId'] = get_cert_id
+
         trans_type = param['txnType']
         if [UnionPay::CONSUME, UnionPay::PRE_AUTH].include? trans_type
           @api_url = UnionPay.front_pay_url
@@ -67,7 +68,7 @@ module UnionPay
         end
 
         param.delete 'signMethod'
-        if param.delete('signature') != Service.sign(param)
+        if param.delete('signature') != sign(param)
           raise('Bad signature returned!')
         end
         self.args = param.merge arr_reserved
@@ -100,12 +101,32 @@ module UnionPay
       end
     end
 
-    def self.sign(param)
+    def get_cert_id
+      get_certificate.certificate.serial.to_i
+    end
+
+    def self.get_validate_certificate
+      OpenSSL::X509::Certificate.new(File.read(UnionPay.unionpay_validate_certificate))
+    end
+
+    def get_cret_key
+      get_certificate.key
+    end
+
+    def get_certificate
+      OpenSSL::PKCS12.new(File.read(UnionPay.unionpay_certificate), UnionPay.unionpay_certificate_psw)
+    end
+
+    def sign(param)
       sign_str = param.sort.map do |k,v|
         "#{k}=#{v}&" unless UnionPay::SignIgnoreParams.include? k
       end.join
-      Digest::MD5.hexdigest(sign_str + Digest::MD5.hexdigest(UnionPay.security_key))
+      sha1_sign = Digest::SHA1.hexdigest(sign_str)
+      digest = OpenSSL::Digest::SHA1.new
+      openssl_sha1 = get_cret_key.sign(digest, sha1_sign)
+      Base64.encode64(openssl_sha1).gsub(/\s/, '')
     end
+
 
     def form(options={})
       attrs = options.map { |k, v| "#{k}='#{v}'" }.join(' ')
@@ -130,21 +151,6 @@ module UnionPay
       self.args[key]
     end
 
-    def get_cert_id
-      get_certificate.certificate.serial.to_i
-    end
-
-    def get_cret_key
-      get_certificate.key
-    end
-
-    def get_certificate
-        OpenSSL::PKCS12.new(File.read(UnionPay.unionpay_certificate), UnionPay.unionpay_certificate_psw)
-    end
-
-    def get_validate_certificate
-        OpenSSL::X509::Certificate.new(File.read(UnionPay.unionpay_validate_certificate))
-    end
 
     private
     def service
@@ -168,7 +174,7 @@ module UnionPay
       end
 
       # signature
-      self.args['signature']  = Service.sign(self.args)
+      self.args['signature']  = sign(self.args)
       self.args['signMethod'] = UnionPay::Sign_method
 
       self
