@@ -12,17 +12,22 @@ module UnionPay
   class Service
     attr_accessor :args, :api_url
 
-    def self.front_pay(param)
-      new.instance_eval do
-        param['txnTime']         ||= Time.now.strftime('%Y%m%d%H%M%S')         #交易时间, YYYYmmhhddHHMMSS
-        param['currencyCode']     ||= UnionPay::CURRENCY_CNY                    #交易币种，CURRENCY_CNY=>人民币
-        param['txnType']         ||= UnionPay::CONSUME
-        param['certId'] = get_cert_id
+    def self.default_options
+      options = {:version => "5.0.0", :txnType => "01",
+                 :merId => UnionPay.merId, :accessType => "0", :bizType => "000201",
+                 :currencyCode => "156", :signMethod => "01", :certId => get_cert_id,
+                 :txnSubType => "01", :encoding => "utf-8", :channelType => "07"
+      }
+    end
 
-        trans_type = param['txnType']
+    def self.front_pay(param)
+      options = default_options
+      new.instance_eval do
+        param = param.merge!(options)
+        trans_type = param[:txnType]
         if [UnionPay::CONSUME, UnionPay::PRE_AUTH].include? trans_type
           @api_url = UnionPay.front_pay_url
-          self.args = PayParamsEmpty.merge(PayParams).merge(param)
+          self.args = param
           @param_check = UnionPay::PayParamsCheck
         else
           # 前台交易仅支持 消费 和 预授权
@@ -37,6 +42,7 @@ module UnionPay
         param['orderTime']         ||= Time.now.strftime('%Y%m%d%H%M%S')         #交易时间, YYYYmmhhddHHMMSS
         param['orderCurrency']     ||= UnionPay::CURRENCY_CNY                    #交易币种，CURRENCY_CNY=>人民币
         param['transType']         ||= UnionPay::REFUND
+        param['merId'] = UnionPay.merId
         @api_url = UnionPay.back_pay_url
         self.args = PayParamsEmpty.merge(PayParams).merge(param)
         @param_check = PayParamsCheck
@@ -101,7 +107,7 @@ module UnionPay
       end
     end
 
-    def get_cert_id
+    def self.get_cert_id
       get_certificate.certificate.serial.to_i
     end
 
@@ -109,23 +115,14 @@ module UnionPay
       OpenSSL::X509::Certificate.new(File.read(UnionPay.unionpay_validate_certificate))
     end
 
-    def get_cret_key
+    def self.get_cret_key
       get_certificate.key
     end
 
-    def get_certificate
+    def self.get_certificate
       OpenSSL::PKCS12.new(File.read(UnionPay.unionpay_certificate), UnionPay.unionpay_certificate_psw)
     end
 
-    def sign(param)
-      sign_str = param.sort.map do |k,v|
-        "#{k}=#{v}&" unless UnionPay::SignIgnoreParams.include? k
-      end.join
-      sha1_sign = Digest::SHA1.hexdigest(sign_str)
-      digest = OpenSSL::Digest::SHA1.new
-      openssl_sha1 = get_cret_key.sign(digest, sha1_sign)
-      Base64.encode64(openssl_sha1).gsub(/\s/, '')
-    end
 
 
     def form(options={})
@@ -151,6 +148,19 @@ module UnionPay
       self.args[key]
     end
 
+    def self.sign(param)
+      sign_str = convert_params(param)
+      sha1_sign = Digest::SHA1.hexdigest(sign_str)
+      digest = OpenSSL::Digest::SHA1.new
+      openssl_sha1 = get_cret_key.sign(digest, sha1_sign)
+      Base64.strict_encode64(openssl_sha1).gsub(/\s/, '')
+    end
+
+    def self.convert_params(param)
+      sign_str = param.map do |k, v|
+        "#{k}=#{v}"
+      end.join("&").strip
+    end
 
     private
     def service
@@ -168,16 +178,18 @@ module UnionPay
       else
         self.args['merReserved'] ||= ''
       end
-
-      @param_check.each do |k|
-        raise("KEY [#{k}] not set in params given") unless self.args.has_key? k
-      end
+      # @param_check.each do |k|
+      #   raise("KEY [#{k}] not set in params given") unless self.args.has_key? k
+      # end
 
       # signature
-      self.args['signature']  = sign(self.args)
+      self.args = self.args.symbolize_keys!
+      self.args['signature']  = self.class.sign(self.args)
       self.args['signMethod'] = UnionPay::Sign_method
 
       self
     end
+
+
   end
 end

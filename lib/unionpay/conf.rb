@@ -10,14 +10,11 @@ module UnionPay
 
   # 支付请求预定义字段
   PayParams = {
-    'version' => '1.0.0',
     'encoding' => 'UTF-8', 
-    'txnType' => '01',
     'txnSubType' => '01',
-    'bizType'  => '000201',
+    # 'bizType'  => '000201',
     'channelType'  => '07',
-    'signMethod'  => '01',
-    "merId" => '777290058127822'
+    'signMethod'  => '01'
   }
 
   FRONT_PAY = 1
@@ -70,7 +67,7 @@ module UnionPay
 
   # 查询请求必填字段检查
   QueryParamsCheck = [
-    "version",
+    # "version",
     "charset",
     "transType",
     "orderNumber",
@@ -86,7 +83,7 @@ module UnionPay
   ]
 
   NotifyParamCheck = [
-    "version",
+    # "version",
     "charset",
     "transType",
     "respCode",
