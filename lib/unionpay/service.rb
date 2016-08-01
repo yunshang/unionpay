@@ -13,10 +13,18 @@ module UnionPay
     attr_accessor :args, :api_url
 
     def self.default_options
-      options = {:version => "5.0.0", :txnType => "01",
-                 :merId => UnionPay.merId, :accessType => "0", :bizType => "000201",
-                 :currencyCode => "156", :signMethod => "01", :certId => get_cert_id,
-                 :txnSubType => "01", :encoding => "utf-8", :channelType => "07"
+      options = {
+          'version' => '5.0.0',
+          'encoding' => 'utf-8',
+          'txnType' => '01',
+          'txnSubType' => '01',
+          'bizType' => '000201',
+          'signMethod' => '01',
+          'channelType' => '07',
+          'accessType' => '0',
+          'currencyCode' => '156',
+          'merId' => UnionPay.merId,
+          'certId' => get_cert_id
       }
     end
 
@@ -24,7 +32,7 @@ module UnionPay
       options = default_options
       new.instance_eval do
         param = param.merge!(options)
-        trans_type = param[:txnType]
+        trans_type = param['txnType']
         if [UnionPay::CONSUME, UnionPay::PRE_AUTH].include? trans_type
           @api_url = UnionPay.front_pay_url
           self.args = param
@@ -120,7 +128,7 @@ module UnionPay
     end
 
     def self.get_certificate
-      OpenSSL::PKCS12.new(File.read(UnionPay.unionpay_certificate), UnionPay.unionpay_certificate_psw)
+        OpenSSL::PKCS12.new(File.read(UnionPay.unionpay_certificate),UnionPay.unionpay_certificate_psw)
     end
 
 
@@ -164,22 +172,19 @@ module UnionPay
 
     private
     def service
-      if self.args['commodityUrl']
-        self.args['commodityUrl'] = URI::encode(self.args['commodityUrl'])
-      end
+      # if self.args['commodityUrl']
+      #   self.args['commodityUrl'] = URI::encode(self.args['commodityUrl'])
+      # end
 
-      arr_reserved = []
-      UnionPay::MerParamsReserved.each do |k|
-        arr_reserved << "#{k}=#{self.args.delete k}" if self.args.has_key? k
-      end
+      # arr_reserved = []
+      # UnionPay::MerParamsReserved.each do |k|
+      #   arr_reserved << "#{k}=#{self.args.delete k}" if self.args.has_key? k
+      # end
 
-      if arr_reserved.any?
-        self.args['merReserved'] = arr_reserved.join('&')
-      else
-        self.args['merReserved'] ||= ''
-      end
-      # @param_check.each do |k|
-      #   raise("KEY [#{k}] not set in params given") unless self.args.has_key? k
+      # if arr_reserved.any?
+      #   self.args['merReserved'] = arr_reserved.join('&')
+      # else
+      #   self.args['merReserved'] ||= ''
       # end
 
       # signature
